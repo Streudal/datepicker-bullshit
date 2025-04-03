@@ -62,7 +62,7 @@ export default function App() {
           />
         </div>
         <div>
-          <h2>Timezone</h2>
+          <h2 className='text-lg'>Timezone</h2>
           <select
             value={timeZone}
             onChange={handleTimeZoneChange}
@@ -76,9 +76,9 @@ export default function App() {
         </div>
       </div>
       <div className='flex flex-col gap-4 py-8'>
-        <p>Native JS selected datetime: {date.toISOString()}</p>
-        <p>Moment selected datetime (UTC): {moment(date).utc().format()}</p>
-        <p>Dayjs selected datetime (UTC): {dayjs(date).utc().format()}</p>
+        <p><span className='font-bold'>Native JS selected datetime (UTC):</span> {date.toISOString()}</p>
+        <p><span className='font-bold'>Moment selected datetime (UTC):</span> {moment(date).utc().format()}</p>
+        <p><span className='font-bold'>Dayjs selected datetime (UTC):</span>{dayjs(date).utc().format()}</p>
       </div>
       <div className='flex flex-row justify-between pt-10 px-10'>
         <div>
