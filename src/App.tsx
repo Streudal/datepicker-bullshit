@@ -11,12 +11,35 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const timezoneMap: Record<string, string> = {
-  'EST': 'America/New_York',
-  'CST': 'America/Chicago',
-  'MDT': 'America/Denver',
-  'PDT': 'America/Los_Angeles',
+const timezoneMap: Record<string, any> = {
+  'America/New_York': {
+    timeZoneShortCode: 'EST',
+    timeZoneString: 'America/New_York',
+    offset: 4
+  },
+  'America/Chicago': {
+    timeZoneShortCode: 'CST',
+    timeZoneString: 'America/Chicago',
+    offset: 5
+  },
+  'America/Denver': {
+    timeZoneShortCode: 'MDT',
+    timeZoneString: 'America/Denver',
+    offset: 6
+  },
+  'America/Los_Angeles': {
+    timeZoneShortCode: 'PDT',
+    timeZoneString: 'America/Los_Angeles',
+    offset: 7
+  },
+  // 'UTC': {
+  // timeZoneShortCode: 'UTC',
+  // timeZoneString: 'Etc/UTC',
+  // offset: 0
+  // }
 }
+
+// 'YYYY-MM-DDTHH:mm:ss.SSSZ'
 
 function getTimezoneCodeByValue(value: string) {
   return Object.keys(timezoneMap).find((key) => timezoneMap[key] === value);
@@ -35,6 +58,10 @@ export default function App() {
   const handleTimeZoneChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setTimeZone(e.currentTarget.value);
   }
+
+  const selectedDate = moment(date).tz(timeZone, true);
+  const utcSelectedDate = moment(date).tz(timeZone, true).utc();
+  const nativeUTCDate = utcSelectedDate.toDate()
 
   return (
     <>
@@ -67,18 +94,33 @@ export default function App() {
             value={timeZone}
             onChange={handleTimeZoneChange}
           >
-            {Object.entries(timezoneMap).map(([timezoneCode, timeZoneName]) => (
-              <option key={timeZoneName} value={timeZoneName}>
-                {timezoneCode}
+            {Object.entries(timezoneMap).map(([timeZoneString, timeZoneDetails]) => (
+              <option key={timeZoneDetails.timeZoneString} value={timeZoneDetails.timeZoneString}>
+                {timeZoneDetails.timeZoneShortCode}
               </option>
             ))}
           </select>
         </div>
       </div>
-      <div className='flex flex-col gap-4 py-8'>
-        <p><span className='font-bold'>Native JS selected datetime (UTC):</span> {date.toISOString()}</p>
-        <p><span className='font-bold'>Moment selected datetime (UTC):</span> {moment(date).utc().format()}</p>
-        <p><span className='font-bold'>Dayjs selected datetime (UTC):</span>{dayjs(date).utc().format()}</p>
+      <div className='flex flex-col gap-4 py-8 items-center justify-center'>
+        <div>
+          <p className='flex flex-col gap-2'>
+            <span className='font-bold'>Selected Datetime</span>
+            {selectedDate.format() + ' ' + timeZone + `(${timezoneMap[timeZone].timeZoneShortCode})`}
+          </p>
+        </div>
+        <div>
+          <p className='flex flex-col gap-2'>
+            <span className='font-bold'>UTC Datetime</span>
+            {utcSelectedDate.format()}
+          </p>
+        </div>
+        <div>
+          <p className='flex flex-col gap-2'>
+            <span className='font-bold'>UTC Datetime (Native)</span>
+            {nativeUTCDate.toISOString()}
+          </p>
+        </div>
       </div>
       <div className='flex flex-row justify-between pt-10 px-10'>
         <div>
