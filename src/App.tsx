@@ -2,7 +2,7 @@ import './App.css';
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from 'react-datepicker';
 import { ChangeEvent, useState } from 'react';
-import moment from 'moment-timezone';
+import moment from 'moment-timezone'; // If using moment-timezone, only use this import instead of the regular 'moment' import.
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -63,13 +63,14 @@ export default function App() {
   const selectedDate = moment(date).tz(timeZone, true);
 
   // Selected date in Moment UTC Date object. Translated to correct UTC based on selected date/timezone instead of current locale. Can't use above because moment is mutable by design and must clone before doing more on it.
-  const utcSelectedDate = moment(date).tz(timeZone, true).utc();
+  const utcSelectedDate = selectedDate.clone().utc();
 
   // Correct Native JS Date object from the Moment UTC Date object. Save this one to DB.
   const nativeUTCDate = utcSelectedDate.toDate();
 
   // From DB back into translated date in Moment
   const dbTranslated = moment(nativeUTCDate).tz(timeZone, false);
+  // const dbTranslated = moment(nativeUTCDate).tz(timeZone, false).toDate().toISOString();
 
   return (
     <>
