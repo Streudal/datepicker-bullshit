@@ -59,9 +59,17 @@ export default function App() {
     setTimeZone(e.currentTarget.value);
   }
 
+  // Translated Native Date object using moment to display in selected date/timezone selection.
   const selectedDate = moment(date).tz(timeZone, true);
+
+  // Selected date in Moment UTC Date object. Translated to correct UTC based on selected date/timezone instead of current locale. Can't use above because moment is mutable by design and must clone before doing more on it.
   const utcSelectedDate = moment(date).tz(timeZone, true).utc();
-  const nativeUTCDate = utcSelectedDate.toDate()
+
+  // Correct Native JS Date object from the Moment UTC Date object. Save this one to DB.
+  const nativeUTCDate = utcSelectedDate.toDate();
+
+  // From DB back into translated date in Moment
+  const dbTranslated = moment(nativeUTCDate).tz(timeZone, false);
 
   return (
     <>
@@ -119,6 +127,12 @@ export default function App() {
           <p className='flex flex-col gap-2'>
             <span className='font-bold'>UTC Datetime (Native)</span>
             {nativeUTCDate.toISOString()}
+          </p>
+        </div>
+        <div>
+          <p className='flex flex-col gap-2'>
+            <span className='font-bold'>UTC Datetime (Native) back into Selected Datetime</span>
+            {dbTranslated.format()}
           </p>
         </div>
       </div>
