@@ -66,7 +66,7 @@ export default function App() {
   const utcSelectedDate = selectedDate.clone().utc();
 
   // Correct Native JS Date object from the Moment UTC Date object. Save this one to DB.
-  const nativeUTCDate = utcSelectedDate.toDate();
+  const nativeUTCDate = utcSelectedDate.clone().toDate();
 
   // From DB back into translated date in Moment
   const dbTranslated = moment(nativeUTCDate).tz(timeZone, false);
