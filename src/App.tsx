@@ -6,6 +6,7 @@ import moment from 'moment-timezone'; // If using moment-timezone, only use this
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { TZDate } from '@date-fns/tz';
 
 // Load the plugins
 dayjs.extend(utc);
@@ -45,18 +46,41 @@ function getTimezoneCodeByValue(value: string) {
   return Object.keys(timezoneMap).find((key) => timezoneMap[key] === value);
 }
 
+const getFakeDbDate = (): Date => {
+  const fakeDbDate = localStorage.getItem('fake-db-date');
+
+  return fakeDbDate ? new Date(fakeDbDate) : new Date();
+}
+
+const getFakeDbTimezone = (): string => {
+  const fakeDbTimezone = localStorage.getItem('fake-db-timezone');
+
+  return fakeDbTimezone ?? moment.tz.guess();
+}
+
 export default function App() {
-  const [date, setDate] = useState<Date>(new Date()); // Don't use the moment/dayjs here. Should use the built in Date object from JS. This is local date.
-  const [timeZone, setTimeZone] = useState<string>(dayjs.tz.guess() ?? 'America/New_York'); // Default can be whatever. Set to users current timezone, otherwise to specified default.
+  const [date, setDate] = useState<Date>(getFakeDbDate()); // Don't use the moment/dayjs here. Should use the built in Date object from JS. This is local date.
+  const [timeZone, setTimeZone] = useState<string>(getFakeDbTimezone()); // Default can be whatever. Set to users current timezone, otherwise to specified default.
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
+      const selectedDatetimeInSelectedTimezone = moment(date).tz(timeZone, true);
+      const utcDatetime = selectedDatetimeInSelectedTimezone.clone().utc();
+      console.log('current locale: ', date)
+      console.log('converted locale: ', utcDatetime.clone().tz(moment.tz.guess()).tz(timeZone).toDate())
       setDate(date);
+      localStorage.setItem('fake-db-date', utcDatetime.toISOString());
     }
   }
 
   const handleTimeZoneChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setTimeZone(e.currentTarget.value);
+    localStorage.setItem('fake-db-timezone', e.currentTarget.value);
+  }
+
+  const clearFakeDb = () => {
+    localStorage.removeItem('fake-db-date');
+    localStorage.removeItem('fake-db-timezone');
   }
 
   // Translated Native Date object using moment to display in selected date/timezone selection.
@@ -74,12 +98,14 @@ export default function App() {
 
   return (
     <>
+      <button className='mb-8' onClick={clearFakeDb}>Clear Fake DB</button>
       <div className='flex flex-row gap-8 justify-center'>
         <div>
-          <h2 className='text-lg'>DatetimePicker</h2>
+          <h2 className='text-lg' title='Pulled from local storage, if exists. Otherwise, gets current date.'>DatetimePicker</h2>
           <DatePicker
             id="enddateTime"
-            selected={date}
+            title='Pulled from local storage, if exists. Otherwise, gets current date.'
+            selected={new TZDate(date, timeZone)}
             popperClassName="calendarPopper"
             aria-labelledby="enddateTimeLabel"
             dateFormat="MM/dd/yyyy HH:mm"
@@ -98,8 +124,9 @@ export default function App() {
           />
         </div>
         <div>
-          <h2 className='text-lg'>Timezone</h2>
+          <h2 className='text-lg' title='Pulled from local storage, if exists. Otherwise, gets current timezone.'>Timezone</h2>
           <select
+            title='Pulled from local storage, if exists. Otherwise, gets current timezone.'
             value={timeZone}
             onChange={handleTimeZoneChange}
           >
@@ -120,7 +147,7 @@ export default function App() {
         </div>
         <div>
           <p className='flex flex-col gap-2'>
-            <span className='font-bold'>UTC Datetime</span>
+            <span className='font-bold'>UTC Datetime (Moment)</span>
             {utcSelectedDate.format()}
           </p>
         </div>
@@ -136,6 +163,9 @@ export default function App() {
             {dbTranslated.format()}
           </p>
         </div>
+      </div>
+      <div className='pt-8'>
+        <h1 className='text-xl'>Formats with Different Libs</h1>
       </div>
       <div className='flex flex-row justify-between pt-10 px-10'>
         <div>
